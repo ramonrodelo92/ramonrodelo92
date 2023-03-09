@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -75,4 +76,18 @@ public class PolizaController {
 
     }
 
+    @DeleteMapping("/poliza/{id}")
+    public ResponseEntity<Object> deletePoliza(@PathVariable Long id) {
+        boolean succesDelete = this.polizaService.deletePoliza(id);
+        Map<String, Object> response = new HashMap<>();
+
+        if (!succesDelete) {
+            response.put("Mensaje", "Error al eliminar poliza");
+            return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        response.put("Mensaje", "Poliza eliminada correctamente");
+        return ResponseMapped.setResponse(HttpStatusCode.OK, response, HttpStatus.NO_CONTENT);
+
+    }
 }

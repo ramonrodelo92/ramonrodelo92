@@ -26,4 +26,14 @@ public class PolizaService {
         return polizaRepository.save(poliza);
     }
 
+    public boolean deletePoliza(Long polizaId) {
+
+        try {
+            polizaRepository.deleteById(polizaId);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
 }
