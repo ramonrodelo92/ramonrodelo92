@@ -7,6 +7,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import lombok.Data;
+
+@Data
 @Entity
 @Table(name = "empleado")
 public class Empleado {
@@ -21,37 +24,5 @@ public class Empleado {
     private String Apellido;
 
     private String Puesto;
-
-    public Long getIdEmpleado() {
-        return idEmpleado;
-    }
-
-    public void setIdEmpleado(Long idEmpleado) {
-        this.idEmpleado = idEmpleado;
-    }
-
-    String getNombre() {
-        return Nombre;
-    }
-
-    public void setNombre(String nombre) {
-        Nombre = nombre;
-    }
-
-    public String getApellido() {
-        return Apellido;
-    }
-
-    public void setApellido(String apellido) {
-        Apellido = apellido;
-    }
-
-    public String getPuesto() {
-        return Puesto;
-    }
-
-    public void setPuesto(String puesto) {
-        Puesto = puesto;
-    }
 
 }

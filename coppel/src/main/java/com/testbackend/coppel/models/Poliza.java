@@ -18,6 +18,9 @@ import javax.persistence.TemporalType;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import lombok.Data;
+
+@Data
 @Entity
 @Table(name = "polizas")
 public class Poliza {
@@ -44,30 +47,6 @@ public class Poliza {
     @PrePersist
     public void prePersist() {
         fecha = new Date();
-    }
-
-    public Long getIdPoliza() {
-        return idPoliza;
-    }
-
-    public void setIdPoliza(Long idPoliza) {
-        this.idPoliza = idPoliza;
-    }
-
-    public Integer getCantidad() {
-        return cantidad;
-    }
-
-    public void setCantidad(Integer cantidad) {
-        this.cantidad = cantidad;
-    }
-
-    public Date getFecha() {
-        return fecha;
-    }
-
-    public void setFecha(Date fecha) {
-        this.fecha = fecha;
     }
 
 }
