@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,8 @@ import com.testbackend.coppel.services.EmpleadoService;
 import com.testbackend.coppel.services.InventarioService;
 import com.testbackend.coppel.services.PolizaService;
 import com.testbackend.coppel.utils.HttpStatusCode;
+import com.testbackend.coppel.utils.PolizaCreateValidator;
+import com.testbackend.coppel.utils.PolizaUpdateValidator;
 import com.testbackend.coppel.utils.ResponseMapped;
 
 @CrossOrigin(origins = { "http://localhost:4200" })
@@ -76,24 +80,48 @@ public class PolizaController {
 
     @PostMapping("/poliza")
     @Transactional
-    public ResponseEntity<Object> createPoliza(@RequestBody Poliza poliza) {
+    public ResponseEntity<Object> createPoliza(@Valid @RequestBody PolizaCreateValidator poliza) {
 
-        Map<String, Object> response = new HashMap<>();
-
+        Map<String, Object> response = new HashMap<String, Object>();
         try {
-            this.polizaService.createPoliza(poliza);
-            response.put("Data", Map.of("Mensaje", "Poliza creada correctamente"));
-            return ResponseMapped.setResponse(HttpStatusCode.OK, response, HttpStatus.CREATED);
-        } catch (Exception e) {
-            response.put("Mensaje", "Error al crear poliza");
-            return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+            Integer cantidad = poliza.getCantidad();
+            Empleado empleado = empleadoService.getEmpleadoById(poliza.getIdEmpleado().longValue());
+            if (empleado == null) {
+                response.put("Mensaje", "Id empleado no existe.");
+                return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.CONFLICT);
+            }
+            Inventario sku = inventarioService.getInventarioBySku(poliza.getSku().longValue());
+            if (sku == null) {
+                response.put("Mensaje", "SKU no existe.");
+                return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.CONFLICT);
+            }
+            if (sku.getCantidad() < cantidad) {
+                response.put("Mensaje", "Cantidad mayor a disponible en inventario.");
+                return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.CONFLICT);
+            }
 
+            sku.setCantidad(sku.getCantidad() - cantidad);
+            inventarioService.saveInventario(sku);
+
+            Poliza nuevaPoliza = new Poliza();
+            nuevaPoliza.setCantidad(cantidad);
+            nuevaPoliza.setEmpleado(empleado);
+            nuevaPoliza.setArticulo(sku);
+
+            polizaService.createPoliza(nuevaPoliza);
+            return ResponseMapped.setResponse(HttpStatusCode.OK, nuevaPoliza, HttpStatus.CREATED);
+        } catch (Exception e) {
+            response.put("Mensaje", "Ha ocurrido un error en los grabados de póliza.");
+            response.put("Error", e.getMessage());
+            // LOGGER.error("/poliza - " + e.getMessage());
+            return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.CONFLICT);
+        }
     }
 
     @PutMapping("/poliza/{id}")
     @Transactional
-    public ResponseEntity<Object> updatePoliza(@PathVariable Long id, @RequestBody Poliza poliza) {
+    public ResponseEntity<Object> updatePoliza(@PathVariable Long id,
+            @Valid @RequestBody PolizaUpdateValidator poliza) {
         Map<String, Object> response = new HashMap<>();
 
         try {
@@ -103,10 +131,12 @@ public class PolizaController {
                 return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.NOT_FOUND);
             }
 
-            if (poliza.getIdPoliza() != null) {
-                Empleado empleado = empleadoService.getEmpleadoById(poliza.getEmpleado().getIdEmpleado());
+            Long idEmpleado = poliza.getIdEmpleado().longValue();
+            if (poliza.getIdEmpleado() != null) {
+                Empleado empleado = empleadoService.getEmpleadoById(idEmpleado);
                 if (empleado == null) {
-                    response.put("Mensaje", "No se encontro empleado con id " + poliza.getEmpleado().getIdEmpleado());
+                    response.put("Mensaje",
+                            "No se encontro empleado con id " + idEmpleado);
                     return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.NOT_FOUND);
                 }
 
@@ -130,13 +160,13 @@ public class PolizaController {
             }
 
             foundPoliza.setCantidad(poliza.getCantidad());
-            foundPoliza.setFecha(poliza.getFecha());
+            foundPoliza.setFecha(foundPoliza.getFecha());
 
             polizaService.createPoliza(foundPoliza);
-            response.put("Mensaje", "Se actualizo correctamente la poliza " + poliza.getIdPoliza());
+            response.put("Mensaje", "Se actualizo correctamente la poliza " + foundPoliza.getIdPoliza());
             return ResponseMapped.setResponse(HttpStatusCode.OK, response, HttpStatus.CREATED);
         } catch (Exception e) {
-            response.put("Mensaje", "Error al actualizar poliza " + poliza.getIdPoliza());
+            response.put("Mensaje", "Error al actualizar poliza");
             return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -145,15 +175,33 @@ public class PolizaController {
     @DeleteMapping("/poliza/{id}")
     @Transactional
     public ResponseEntity<Object> deletePoliza(@PathVariable Long id) {
-        boolean succesDelete = this.polizaService.deletePoliza(id);
-        Map<String, Object> response = new HashMap<>();
+        Poliza foundPoliza = polizaService.getPolizaById(id);
+        Map<String, Object> response = new HashMap<String, Object>();
+        try {
+            if (foundPoliza == null) {
+                response.put("Message", "Póliza no encontrada");
+                return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.NOT_FOUND);
+            }
 
-        if (!succesDelete) {
-            response.put("Mensaje", "Error al eliminar poliza");
-            return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.INTERNAL_SERVER_ERROR);
+            Long editedSku = foundPoliza.getArticulo().getSku().longValue();
+            boolean deleted = polizaService.deletePoliza(id);
+            if (deleted) {
+                Inventario sku = inventarioService.getInventarioBySku(editedSku);
+                sku.setCantidad(sku.getCantidad() + foundPoliza.getCantidad());
+                inventarioService.saveInventario(sku);
+                response.put("Message", "Se eliminó correctamente la póliza: " + id);
+                return ResponseMapped.setResponse(HttpStatusCode.OK, response, HttpStatus.OK);
+
+            } else {
+                response.put("Message", "Error al intentar eliminar la póliza: " + id);
+                return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.OK);
+            }
+
+        } catch (Exception e) {
+            response.put("Mensaje", "Error al eliminar la póliza: " + id);
+            response.put("Error", e.getMessage());
+            // LOGGER.error("/poliza - " + e.getMessage());
+            return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.CONFLICT);
         }
-
-        response.put("Mensaje", "Poliza eliminada correctamente");
-        return ResponseMapped.setResponse(HttpStatusCode.OK, response, HttpStatus.NO_CONTENT);
     }
 }

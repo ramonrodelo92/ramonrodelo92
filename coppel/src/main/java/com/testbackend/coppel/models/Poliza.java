@@ -1,8 +1,8 @@
 package com.testbackend.coppel.models;
 
+import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -18,26 +18,30 @@ import javax.persistence.TemporalType;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Data;
 
 @Data
 @Entity
 @Table(name = "polizas")
-public class Poliza {
+public class Poliza implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(unique = true, nullable = false)
     private Long idPoliza;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "idEmpleado")
     private Empleado empleado;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "sku")
     private Inventario articulo;
 
+    @JsonIgnoreProperties
     private Integer cantidad;
 
     @Temporal(TemporalType.DATE)

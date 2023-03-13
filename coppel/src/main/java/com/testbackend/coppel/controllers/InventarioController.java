@@ -21,7 +21,7 @@ import com.testbackend.coppel.utils.ResponseMapped;
 
 @CrossOrigin(origins = { "http://localhost:4200" })
 @RestController()
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/inventario")
 public class InventarioController {
     @Autowired
     private InventarioService inventarioService;
