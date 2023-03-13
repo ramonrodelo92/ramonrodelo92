@@ -69,7 +69,7 @@ public class PolizaController {
                 return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.NOT_FOUND);
             }
 
-            response.put("Data", Map.of("Poliza", foundPoliza));
+            response.put("Poliza", foundPoliza);
             return ResponseMapped.setResponse(HttpStatusCode.OK, response, HttpStatus.OK);
         } catch (Exception e) {
             response.put("Mensaje", "Error al obtener poliza");
@@ -163,7 +163,7 @@ public class PolizaController {
             foundPoliza.setFecha(foundPoliza.getFecha());
 
             polizaService.createPoliza(foundPoliza);
-            response.put("Mensaje", "Se actualizo correctamente la poliza " + foundPoliza.getIdPoliza());
+            response.put("Mensaje", "Se actualizó correctamente la póliza: " + foundPoliza.getIdPoliza());
             return ResponseMapped.setResponse(HttpStatusCode.OK, response, HttpStatus.CREATED);
         } catch (Exception e) {
             response.put("Mensaje", "Error al actualizar poliza");
@@ -179,7 +179,7 @@ public class PolizaController {
         Map<String, Object> response = new HashMap<String, Object>();
         try {
             if (foundPoliza == null) {
-                response.put("Message", "Póliza no encontrada");
+                response.put("Mensaje", "Póliza no encontrada");
                 return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.NOT_FOUND);
             }
 
@@ -189,11 +189,11 @@ public class PolizaController {
                 Inventario sku = inventarioService.getInventarioBySku(editedSku);
                 sku.setCantidad(sku.getCantidad() + foundPoliza.getCantidad());
                 inventarioService.saveInventario(sku);
-                response.put("Message", "Se eliminó correctamente la póliza: " + id);
+                response.put("Mensaje", "Se eliminó correctamente la póliza: " + id);
                 return ResponseMapped.setResponse(HttpStatusCode.OK, response, HttpStatus.OK);
 
             } else {
-                response.put("Message", "Error al intentar eliminar la póliza: " + id);
+                response.put("Mensaje", "Error al intentar eliminar la póliza: " + id);
                 return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.OK);
             }
 
