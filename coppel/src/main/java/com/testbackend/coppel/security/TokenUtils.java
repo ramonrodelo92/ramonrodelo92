@@ -14,7 +14,7 @@ import io.jsonwebtoken.security.Keys;
 
 public class TokenUtils {
     public static String SECRET_KEY = "supersecretkey534535$&/()qwdjsaioflkfknsd$%/(%)$%&/(())2345";
-    public static Long TOKEN_VALIDITY_SECONDS = 2_592_000L;
+    public static Long TOKEN_VALIDITY_SECONDS = 864_000_000L;//1 dia de expiracion
 
     public static String generateToken(String email) {
         Map<String, Object> extras = new HashMap<>();
@@ -22,7 +22,7 @@ public class TokenUtils {
 
         String token = Jwts.builder()
                 .setSubject(email)
-                .setExpiration(new Date(System.currentTimeMillis() + TOKEN_VALIDITY_SECONDS * 1_000L))
+                .setExpiration(new Date(System.currentTimeMillis() + TOKEN_VALIDITY_SECONDS))
                 .addClaims(extras)
                 .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()))
                 .compact();
