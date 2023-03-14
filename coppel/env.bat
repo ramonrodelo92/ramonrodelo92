@@ -1,0 +1,5 @@
+set DB_URL=
+set DB_USER=
+set DB_PASS=
+set SPRING_SERVER_PORT=
+set JWT_SECRET=
