@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +28,8 @@ public class EmpleadoController {
 
     @Autowired
     private EmpleadoService empleadoService;
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(EmpleadoController.class);
 
     @GetMapping("/empleado")
     public ResponseEntity<Object> index() {
@@ -51,6 +56,7 @@ public class EmpleadoController {
             return ResponseMapped.setResponse(HttpStatusCode.OK, response, HttpStatus.OK);
         } catch (Exception e) {
             response.put("Mensaje", "Error al obtener empleado con el id " + id);
+            LOGGER.error("/empleado/" + id, e.getMessage());
             return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 

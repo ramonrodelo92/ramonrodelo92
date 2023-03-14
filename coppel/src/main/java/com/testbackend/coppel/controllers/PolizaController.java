@@ -6,6 +6,9 @@ import java.util.Map;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +48,8 @@ public class PolizaController {
     @Autowired
     private InventarioService inventarioService;
 
+    private final static Logger LOGGER = LoggerFactory.getLogger(PolizaController.class);
+
     @GetMapping("/poliza")
     @Transactional(readOnly = true)
     public Map<String, Map<String, Object>> index() {
@@ -73,6 +78,7 @@ public class PolizaController {
             return ResponseMapped.setResponse(HttpStatusCode.OK, response, HttpStatus.OK);
         } catch (Exception e) {
             response.put("Mensaje", "Error al obtener poliza");
+            LOGGER.error("/poliza/" + id, e.getMessage());
             return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -113,7 +119,7 @@ public class PolizaController {
         } catch (Exception e) {
             response.put("Mensaje", "Ha ocurrido un error en los grabados de póliza.");
             response.put("Error", e.getMessage());
-            // LOGGER.error("/poliza - " + e.getMessage());
+            LOGGER.error("/poliza - " + e.getMessage());
             return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.CONFLICT);
         }
     }
@@ -167,6 +173,7 @@ public class PolizaController {
             return ResponseMapped.setResponse(HttpStatusCode.OK, response, HttpStatus.CREATED);
         } catch (Exception e) {
             response.put("Mensaje", "Error al actualizar poliza");
+            LOGGER.error("/poliza - " + e.getMessage());
             return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -200,7 +207,7 @@ public class PolizaController {
         } catch (Exception e) {
             response.put("Mensaje", "Error al eliminar la póliza: " + id);
             response.put("Error", e.getMessage());
-            // LOGGER.error("/poliza - " + e.getMessage());
+            LOGGER.error("/poliza - " + e.getMessage());
             return ResponseMapped.setResponse(HttpStatusCode.FAILURE, response, HttpStatus.CONFLICT);
         }
     }

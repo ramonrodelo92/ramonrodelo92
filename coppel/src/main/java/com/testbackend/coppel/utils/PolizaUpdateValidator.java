@@ -10,5 +10,5 @@ public class PolizaUpdateValidator {
     private Integer cantidad;
 
     @Range(min = 1, message = "El campo id_empleado debe ser mayor a 0.")
-    private Integer idEmpleado;
+    private Long idEmpleado;
 }
